@@ -1,5 +1,6 @@
 package com.benji.entities;
 
+import com.benji.models.Link;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +19,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -36,6 +38,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Platform.findByPrice", query = "SELECT p FROM Platform p WHERE p.price = :price"),
     @NamedQuery(name = "Platform.findByBuyDate", query = "SELECT p FROM Platform p WHERE p.buyDate = :buyDate")})
 public class Platform implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,6 +66,8 @@ public class Platform implements Serializable {
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
     @ManyToOne
     private Brand brandId;
+    @Transient
+    private List<Link> links;
 
     public Platform() {
     }
@@ -127,6 +132,15 @@ public class Platform implements Serializable {
 
     public void setBrandId(Brand brandId) {
         this.brandId = brandId;
+    }
+
+    public List<Link> getLinks() {
+        return links;
+    }
+
+    public void addLink(String url, String rel) {
+        Link link = new Link(url, rel);
+        this.links.add(link);
     }
 
     @Override

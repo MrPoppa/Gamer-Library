@@ -1,5 +1,6 @@
 package com.benji.entities;
 
+import com.benji.models.Link;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -62,6 +64,8 @@ public class Game implements Serializable {
     @JoinColumn(name = "rating_id", referencedColumnName = "id")
     @ManyToOne
     private GameRating ratingId;
+    @Transient
+    private List<Link> links;
 
     public Game() {
     }
@@ -142,6 +146,15 @@ public class Game implements Serializable {
 
     public void setRatingId(GameRating ratingId) {
         this.ratingId = ratingId;
+    }
+
+    public List<Link> getLinks() {
+        return links;
+    }
+
+    public void addLink(String url, String rel) {
+        Link link = new Link(url, rel);
+        this.links.add(link);
     }
 
     @Override
