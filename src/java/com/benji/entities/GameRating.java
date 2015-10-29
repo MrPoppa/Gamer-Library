@@ -1,5 +1,6 @@
 package com.benji.entities;
 
+import com.benji.models.Link;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
@@ -12,6 +13,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -39,6 +41,8 @@ public class GameRating implements Serializable {
     private String rating;
     @OneToMany(mappedBy = "ratingId")
     private List<Game> gameList;
+    @Transient
+    private List<Link> links;
 
     public GameRating() {
     }
@@ -70,6 +74,15 @@ public class GameRating implements Serializable {
 
     public void setGameList(List<Game> gameList) {
         this.gameList = gameList;
+    }
+
+    public List<Link> getLinks() {
+        return links;
+    }
+
+    public void addLink(String url, String rel) {
+        Link link = new Link(url, rel);
+        this.links.add(link);
     }
 
     @Override
