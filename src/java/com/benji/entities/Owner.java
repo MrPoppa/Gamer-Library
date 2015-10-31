@@ -1,6 +1,5 @@
 package com.benji.entities;
 
-import com.benji.models.Link;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
@@ -15,7 +14,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -32,10 +31,12 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Owner.findById", query = "SELECT o FROM Owner o WHERE o.id = :id"),
     @NamedQuery(name = "Owner.findByFirstName", query = "SELECT o FROM Owner o WHERE o.firstName = :firstName"),
     @NamedQuery(name = "Owner.findByLastName", query = "SELECT o FROM Owner o WHERE o.lastName = :lastName"),
+    @NamedQuery(name = "Owner.findByEmail", query = "SELECT o FROM Owner o WHERE o.email = :email"),
     @NamedQuery(name = "Owner.findBySsn", query = "SELECT o FROM Owner o WHERE o.ssn = :ssn"),
     @NamedQuery(name = "Owner.findByUserName", query = "SELECT o FROM Owner o WHERE o.userName = :userName"),
     @NamedQuery(name = "Owner.findByPassword", query = "SELECT o FROM Owner o WHERE o.password = :password")})
 public class Owner implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,6 +49,11 @@ public class Owner implements Serializable {
     @Size(max = 64)
     @Column(name = "lastName")
     private String lastName;
+    //if the field contains email address consider using this annotation to enforce field validation
+    @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
+    @Size(max = 64)
+    @Column(name = "email")
+    private String email;
     @Size(max = 12)
     @Column(name = "ssn")
     private String ssn;
@@ -64,8 +70,6 @@ public class Owner implements Serializable {
     private List<Game> gameList;
     @ManyToMany(mappedBy = "ownerList")
     private List<Platform> platformList;
-    @Transient
-    private List<Link> links;
 
     public Owner() {
     }
@@ -96,6 +100,14 @@ public class Owner implements Serializable {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getSsn() {
@@ -130,7 +142,7 @@ public class Owner implements Serializable {
     public void setGameList(List<Game> gameList) {
         this.gameList = gameList;
     }
-    
+
     @XmlTransient
     public List<Platform> getPlatformList() {
         return platformList;
@@ -138,15 +150,6 @@ public class Owner implements Serializable {
 
     public void setPlatformList(List<Platform> platformList) {
         this.platformList = platformList;
-    }
-
-    public List<Link> getLinks() {
-        return links;
-    }
-
-    public void addLink(String url, String rel) {
-        Link link = new Link(url, rel);
-        this.links.add(link);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.benji.entities;
 
-import com.benji.models.Link;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
@@ -13,7 +12,6 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -43,8 +41,6 @@ public class Brand implements Serializable {
     private List<Game> gameList;
     @OneToMany(mappedBy = "brandId")
     private List<Platform> platformList;
-    @Transient
-    private List<Link> links;
 
     public Brand() {
     }
@@ -85,15 +81,6 @@ public class Brand implements Serializable {
 
     public void setPlatformList(List<Platform> platformList) {
         this.platformList = platformList;
-    }
-
-    public List<Link> getLinks() {
-        return links;
-    }
-
-    public void addLink(String url, String rel) {
-        Link link = new Link(url, rel);
-        this.links.add(link);
     }
 
     @Override
