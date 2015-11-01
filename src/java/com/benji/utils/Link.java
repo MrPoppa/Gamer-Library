@@ -1,4 +1,4 @@
-package com.benji.models;
+package com.benji.utils;
 
 /**
  *
@@ -11,9 +11,9 @@ public class Link {
     public Link() {
     }
 
-    public Link(String ref, String href) {
-        this.href = ref;
+    public Link(String href, String ref) {
         this.ref = href;
+        this.href = ref;
     }
     
     public String getRef() {
