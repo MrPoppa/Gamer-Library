@@ -2,6 +2,8 @@ package com.benji.entitywrappers;
 
 import com.benji.entities.Owner;
 import com.benji.utils.Link;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -9,14 +11,14 @@ import com.benji.utils.Link;
  */
 public class OwnerWrapper {
     private Owner owner;
-    private Link link;
+    private List<Link> links =  new ArrayList<>();
 
     public OwnerWrapper() {
     }
 
-    public OwnerWrapper(Owner owner, Link link) {
+    public OwnerWrapper(Owner owner, List<Link> links) {
         this.owner = owner;
-        this.link = link;
+        this.links = links;
     }
 
     public Owner getOwner() {
@@ -27,11 +29,12 @@ public class OwnerWrapper {
         this.owner = owner;
     }
 
-    public Link getLink() {
-        return link;
+    public List<Link> getLinks() {
+        return links;
     }
 
-    public void setLink(Link link) {
-        this.link = link;
+    public void setLinks(List<Link> links) {
+        this.links = links;
     }
+
 }
