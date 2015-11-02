@@ -50,15 +50,15 @@ public class Game implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date buyDate;
     @ManyToMany(mappedBy = "gameList")
-    private List<Platform> platformList;
+    private List<Genre> genreList;
     @ManyToMany(mappedBy = "gameList")
     private List<Owner> ownerList;
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
     @ManyToOne
-    private Brand brandId;
-    @JoinColumn(name = "genre_id", referencedColumnName = "id")
+    private GameBrand brandId;
+    @JoinColumn(name = "platform_id", referencedColumnName = "id")
     @ManyToOne
-    private GameGenre genreId;
+    private Platform platformId;
     @JoinColumn(name = "rating_id", referencedColumnName = "id")
     @ManyToOne
     private GameRating ratingId;
@@ -103,12 +103,12 @@ public class Game implements Serializable {
     }
 
     @XmlTransient
-    public List<Platform> getPlatformList() {
-        return platformList;
+    public List<Genre> getGenreList() {
+        return genreList;
     }
 
-    public void setPlatformList(List<Platform> platformList) {
-        this.platformList = platformList;
+    public void setGenreList(List<Genre> genreList) {
+        this.genreList = genreList;
     }
 
     @XmlTransient
@@ -120,20 +120,20 @@ public class Game implements Serializable {
         this.ownerList = ownerList;
     }
 
-    public Brand getBrandId() {
+    public GameBrand getBrandId() {
         return brandId;
     }
 
-    public void setBrandId(Brand brandId) {
+    public void setBrandId(GameBrand brandId) {
         this.brandId = brandId;
     }
 
-    public GameGenre getGenreId() {
-        return genreId;
+    public Platform getPlatformId() {
+        return platformId;
     }
 
-    public void setGenreId(GameGenre genreId) {
-        this.genreId = genreId;
+    public void setPlatformId(Platform platformId) {
+        this.platformId = platformId;
     }
 
     public GameRating getRatingId() {

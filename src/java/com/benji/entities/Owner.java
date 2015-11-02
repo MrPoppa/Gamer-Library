@@ -3,6 +3,7 @@ package com.benji.entities;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,7 +35,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Owner.findByEmail", query = "SELECT o FROM Owner o WHERE o.email = :email"),
     @NamedQuery(name = "Owner.findBySsn", query = "SELECT o FROM Owner o WHERE o.ssn = :ssn"),
     @NamedQuery(name = "Owner.findByUserName", query = "SELECT o FROM Owner o WHERE o.userName = :userName"),
-    @NamedQuery(name = "Owner.findByPassword", query = "SELECT o FROM Owner o WHERE o.password = :password")})
+    @NamedQuery(name = "Owner.findByPassword", query = "SELECT o FROM Owner o WHERE o.password = :password")
+})
 public class Owner implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -68,7 +70,7 @@ public class Owner implements Serializable {
         @JoinColumn(name = "game_id", referencedColumnName = "id")})
     @ManyToMany
     private List<Game> gameList;
-    @ManyToMany(mappedBy = "ownerList")
+    @ManyToMany(mappedBy = "ownerList", cascade = CascadeType.PERSIST)
     private List<Platform> platformList;
 
     public Owner() {

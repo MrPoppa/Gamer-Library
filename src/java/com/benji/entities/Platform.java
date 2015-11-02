@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -34,7 +36,10 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Platform.findById", query = "SELECT p FROM Platform p WHERE p.id = :id"),
     @NamedQuery(name = "Platform.findByPlatformName", query = "SELECT p FROM Platform p WHERE p.platformName = :platformName"),
     @NamedQuery(name = "Platform.findByPrice", query = "SELECT p FROM Platform p WHERE p.price = :price"),
-    @NamedQuery(name = "Platform.findByBuyDate", query = "SELECT p FROM Platform p WHERE p.buyDate = :buyDate")})
+    @NamedQuery(name = "Platform.findByBuyDate", query = "SELECT p FROM Platform p WHERE p.buyDate = :buyDate"),
+    //SQL: SELECT p.* FROM platform AS p JOIN platform_owner AS po ON p.id = po.platform_id WHERE owner_id = 2;
+    @NamedQuery(name = "Platform.findAllPlatformsByOwnerId", query = "SELECT p FROM Platform p JOIN p.ownerList o WHERE o.id = :ownerId")
+})
 public class Platform implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -50,19 +55,16 @@ public class Platform implements Serializable {
     @Column(name = "buyDate")
     @Temporal(TemporalType.DATE)
     private Date buyDate;
-    @JoinTable(name = "game_platform", joinColumns = {
-        @JoinColumn(name = "platform_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "game_id", referencedColumnName = "id")})
-    @ManyToMany
-    private List<Game> gameList;
     @JoinTable(name = "platform_owner", joinColumns = {
         @JoinColumn(name = "platform_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "owner_id", referencedColumnName = "id")})
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private List<Owner> ownerList;
+    @OneToMany(mappedBy = "platformId")
+    private List<Game> gameList;
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
     @ManyToOne
-    private Brand brandId;
+    private PlatformBrand brand;
 
     public Platform() {
     }
@@ -104,15 +106,6 @@ public class Platform implements Serializable {
     }
 
     @XmlTransient
-    public List<Game> getGameList() {
-        return gameList;
-    }
-
-    public void setGameList(List<Game> gameList) {
-        this.gameList = gameList;
-    }
-
-    @XmlTransient
     public List<Owner> getOwnerList() {
         return ownerList;
     }
@@ -121,12 +114,21 @@ public class Platform implements Serializable {
         this.ownerList = ownerList;
     }
 
-    public Brand getBrandId() {
-        return brandId;
+    @XmlTransient
+    public List<Game> getGameList() {
+        return gameList;
     }
 
-    public void setBrandId(Brand brandId) {
-        this.brandId = brandId;
+    public void setGameList(List<Game> gameList) {
+        this.gameList = gameList;
+    }
+
+    public PlatformBrand getBrand() {
+        return brand;
+    }
+
+    public void setBrand(PlatformBrand brand) {
+        this.brand = brand;
     }
 
     @Override

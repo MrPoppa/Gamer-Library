@@ -1,6 +1,7 @@
 package com.benji.ejb;
 
 import com.benji.entities.Platform;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,6 +22,11 @@ public class PlatformFacade extends AbstractFacade<Platform> {
 
     public PlatformFacade() {
         super(Platform.class);
+    }
+    
+    public List<Platform> getAllPlatformsByOwnerId(int ownerId) {
+        return (List<Platform>) getEntityManager().createNamedQuery("Platform.findAllPlatformsByOwnerId")
+                .setParameter("ownerId", ownerId).getResultList();
     }
 
 }
