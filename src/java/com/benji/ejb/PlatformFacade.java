@@ -25,8 +25,6 @@ public class PlatformFacade extends AbstractFacade<Platform> {
     }
     
     public List<Platform> getAllPlatformsByOwnerId(int ownerId) {
-        return (List<Platform>) getEntityManager().createNamedQuery("Platform.findAllPlatformsByOwnerId")
-                .setParameter("ownerId", ownerId).getResultList();
+        return getEntityManager().createNamedQuery("Platform.findAllPlatformsByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
-
 }

@@ -1,4 +1,4 @@
-package com.benji.utils;
+package com.benji.entities;
 
 /**
  *

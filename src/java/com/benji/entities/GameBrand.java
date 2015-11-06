@@ -37,7 +37,7 @@ public class GameBrand implements Serializable {
     @Size(max = 64)
     @Column(name = "brandName")
     private String brandName;
-    @OneToMany(mappedBy = "brandId")
+    @OneToMany(mappedBy = "brand")
     private List<Game> gameList;
 
     public GameBrand() {

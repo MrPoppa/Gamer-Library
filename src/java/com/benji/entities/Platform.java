@@ -60,7 +60,7 @@ public class Platform implements Serializable {
         @JoinColumn(name = "owner_id", referencedColumnName = "id")})
     @ManyToMany(cascade = CascadeType.PERSIST)
     private List<Owner> ownerList;
-    @OneToMany(mappedBy = "platformId")
+    @OneToMany(mappedBy = "platform")
     private List<Game> gameList;
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
     @ManyToOne

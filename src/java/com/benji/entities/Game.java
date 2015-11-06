@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -35,6 +37,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Game.findByPrice", query = "SELECT g FROM Game g WHERE g.price = :price"),
     @NamedQuery(name = "Game.findByBuyDate", query = "SELECT g FROM Game g WHERE g.buyDate = :buyDate")})
 public class Game implements Serializable {
+    @OneToMany(mappedBy = "game")
+    private List<GameOfTheDay> gameOfTheDayList;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,19 +53,19 @@ public class Game implements Serializable {
     @Column(name = "buyDate")
     @Temporal(TemporalType.DATE)
     private Date buyDate;
-    @ManyToMany(mappedBy = "gameList")
+    @ManyToMany(mappedBy = "gameList", cascade = CascadeType.PERSIST)
     private List<Genre> genreList;
     @ManyToMany(mappedBy = "gameList")
     private List<Owner> ownerList;
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
     @ManyToOne
-    private GameBrand brandId;
+    private GameBrand brand;
     @JoinColumn(name = "platform_id", referencedColumnName = "id")
     @ManyToOne
-    private Platform platformId;
+    private Platform platform;
     @JoinColumn(name = "rating_id", referencedColumnName = "id")
     @ManyToOne
-    private GameRating ratingId;
+    private GameRating rating;
 
     public Game() {
     }
@@ -120,28 +124,28 @@ public class Game implements Serializable {
         this.ownerList = ownerList;
     }
 
-    public GameBrand getBrandId() {
-        return brandId;
+    public GameBrand getBrand() {
+        return brand;
     }
 
-    public void setBrandId(GameBrand brandId) {
-        this.brandId = brandId;
+    public void setBrand(GameBrand brand) {
+        this.brand = brand;
     }
 
-    public Platform getPlatformId() {
-        return platformId;
+    public Platform getPlatform() {
+        return platform;
     }
 
-    public void setPlatformId(Platform platformId) {
-        this.platformId = platformId;
+    public void setPlatform(Platform platform) {
+        this.platform = platform;
     }
 
-    public GameRating getRatingId() {
-        return ratingId;
+    public GameRating getRating() {
+        return rating;
     }
 
-    public void setRatingId(GameRating ratingId) {
-        this.ratingId = ratingId;
+    public void setRating(GameRating rating) {
+        this.rating = rating;
     }
 
     @Override
@@ -167,6 +171,15 @@ public class Game implements Serializable {
     @Override
     public String toString() {
         return "com.benji.entities.Game[ id=" + id + " ]";
+    }
+
+    @XmlTransient
+    public List<GameOfTheDay> getGameOfTheDayList() {
+        return gameOfTheDayList;
+    }
+
+    public void setGameOfTheDayList(List<GameOfTheDay> gameOfTheDayList) {
+        this.gameOfTheDayList = gameOfTheDayList;
     }
 
 }

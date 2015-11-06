@@ -37,7 +37,7 @@ public class GameRating implements Serializable {
     @Size(max = 64)
     @Column(name = "rating")
     private String rating;
-    @OneToMany(mappedBy = "ratingId")
+    @OneToMany(mappedBy = "rating")
     private List<Game> gameList;
 
     public GameRating() {
