@@ -1,7 +1,7 @@
 package com.benji.entitywrappers;
 
 import com.benji.entities.Owner;
-import com.benji.utils.Link;
+import com.benji.entities.Link;
 import java.util.ArrayList;
 import java.util.List;
 
