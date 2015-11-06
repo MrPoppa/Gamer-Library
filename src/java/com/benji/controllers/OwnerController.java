@@ -67,7 +67,7 @@ public class OwnerController {
     /**
      * Method to fetch all Owner objects saved in the database.
      *
-     * @param uriInfo Context used to build uri leading to specific requests.
+     * @param uriInfo Context used to build URI leading to specific requests.
      * @return A list containing all Owner objects including a response code.
      */
     @GET
@@ -96,7 +96,7 @@ public class OwnerController {
     /**
      * Method to fetch a specific Owner object saved in the database.
      *
-     * @param uriInfo Context used to build uri leading to specific requests.
+     * @param uriInfo Context used to build URI leading to specific requests.
      * @param ownerId Specifies the id of the wanted Owner object.
      * @return The Owner object with the specific ownerId including a response
      * code
@@ -263,15 +263,15 @@ public class OwnerController {
     ) {
         List<Platform> platforms = platformFacade.getAllPlatformsByOwnerId(ownerId);
         List<PlatformWrapper> wrappedPlatforms = new ArrayList<>();
-        for (Platform p : platforms) {
+        for (Platform platform : platforms) {
             String selfUri = uriInfo.getBaseUriBuilder()
                     .path(PlatformController.class)
-                    .path(Integer.toString(p.getId()))
+                    .path(Integer.toString(platform.getId()))
                     .build()
                     .toString();
             Link link = new Link(selfUri, "self");
             PlatformWrapper wrappedPlatform = new PlatformWrapper();
-            wrappedPlatform.setPlatform(p);
+            wrappedPlatform.setPlatform(platform);
             wrappedPlatform.getLinks().add(link);
             wrappedPlatforms.add(wrappedPlatform);
         }
@@ -294,9 +294,9 @@ public class OwnerController {
         Owner owner = ownerFacade.find(ownerId);
         PlatformBrand brand = platformBrandFacade.find(brandId);
         if (owner == null) {
-            throw new DataNotFoundException("Owner with " + ownerId + " does not exist");
+            throw new DataNotFoundException("Owner with " + ownerId + " does not exist.");
         } else if (brand == null || platformName == null) {
-            throw new IllegalPropertyException("Did not recognize or ecountered faulty input parameters");
+            throw new IllegalPropertyException("Encountered faulty or did not recognize input parameters.");
         } else {
             Platform platform = new Platform();
             platform.setPlatformName(platformName);
@@ -330,12 +330,12 @@ public class OwnerController {
     }
 
     @PUT
-    @Path("{ownerId}/platform/{platformId}/game")
+    @Path("{ownerId}/game")
     @Produces(JSON)
     public Response addGame(
             @Context UriInfo uriInfo,
             @PathParam("ownerId") int ownerId,
-            @PathParam("platformId") int platformId,
+            @FormParam("platformId") int platformId,
             @FormParam("gameName") String gameName,
             @FormParam("price") int price,
             @FormParam("ratingId") int ratingId,

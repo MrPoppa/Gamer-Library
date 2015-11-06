@@ -6,16 +6,15 @@ import com.benji.ejb.PlatformFacade;
 import com.benji.entities.Game;
 import com.benji.entities.Owner;
 import com.benji.entities.Platform;
-import com.benji.entities.PlatformBrand;
 import com.benji.entitywrappers.PlatformWrapper;
 import com.benji.entities.Link;
+import com.benji.exceptions.DataNotFoundException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -63,7 +62,8 @@ public class PlatformController {
             wrappedPlatform.getLinks().add(selfLink);
             return Response.status(Status.OK).entity(wrappedPlatform).build();
         } else {
-            return Response.status(Status.NOT_FOUND).build();
+            throw new DataNotFoundException("Platform with id " + platformId
+                    + " does not exist.");
         }
     }
 
@@ -95,7 +95,7 @@ public class PlatformController {
     /**
      * Lets owners trade platforms.
      *
-     * @param uriInfo Context used to build uri leading to specific requests.
+     * @param uriInfo Context used to build URI leading to specific requests.
      * @param ownerId int representing the old owners id.
      * @param platformId int representing the id of the platform about to be
      * traded
@@ -109,9 +109,13 @@ public class PlatformController {
     @Path("trade")
     public Response tradePlatform(
             @Context UriInfo uriInfo,
+            @NotNull
             @FormParam("ownerId") int ownerId,
+            @NotNull
             @FormParam("platformId") int platformId,
+            @NotNull
             @FormParam("newOwnerId") int newOwnerId,
+            @NotNull
             @FormParam("tradeGames") boolean tradeGames
     ) {
         Platform platform = platformFacade.find(platformId);
@@ -153,10 +157,11 @@ public class PlatformController {
             wrappedPlatform.getLinks().add(tradeLink);
             return Response.status(Status.OK).entity(wrappedPlatform).build();
         } else {
-            return Response.status(Status.NOT_FOUND).build();
+            throw new DataNotFoundException("Owner with id " + ownerId
+                    + " does not own the platform with id " + platformId);
         }
     }
-    
+
 //    @GET
 //    @Produces(JSON)
 //    public Response getAllOwnedPlatforms(
@@ -229,5 +234,4 @@ public class PlatformController {
 //            return Response.status(Status.OK).entity(wrappedPlatform).build();
 //        }
 //    }
-
 }
