@@ -1,19 +1,30 @@
 package com.benji.controllers;
 
+import com.benji.ejb.GameBrandFacade;
+import com.benji.ejb.GameFacade;
+import com.benji.ejb.GameRatingFacade;
+import com.benji.ejb.GenreFacade;
 import com.benji.ejb.OwnerFacade;
 import com.benji.ejb.PlatformBrandFacade;
 import com.benji.ejb.PlatformFacade;
+import com.benji.entities.Game;
+import com.benji.entities.GameBrand;
+import com.benji.entities.GameRating;
+import com.benji.entities.Genre;
 import com.benji.entities.Owner;
 import com.benji.entities.Platform;
 import com.benji.entities.PlatformBrand;
 import com.benji.entitywrappers.OwnerWrapper;
 import com.benji.entitywrappers.PlatformWrapper;
-import com.benji.utils.Link;
+import com.benji.entities.Link;
+import com.benji.exceptions.DataNotFoundException;
+import com.benji.exceptions.IllegalPropertyException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -33,7 +44,7 @@ import javax.ws.rs.core.UriInfo;
  *
  * @author Benjamin
  */
-@Path("owner")
+@Path("/owner")
 public class OwnerController {
 
     private final String JSON = MediaType.APPLICATION_JSON;
@@ -43,7 +54,15 @@ public class OwnerController {
     @EJB
     PlatformBrandFacade platformBrandFacade;
     @EJB
+    GameBrandFacade gameBrandFacade;
+    @EJB
+    GameRatingFacade gameRatingFacade;
+    @EJB
+    GenreFacade genreFacade;
+    @EJB
     PlatformFacade platformFacade;
+    @EJB
+    GameFacade gameFacade;
 
     /**
      * Method to fetch all Owner objects saved in the database.
@@ -91,7 +110,7 @@ public class OwnerController {
     ) {
         Owner owner = ownerFacade.find(ownerId);
         if (owner == null) {
-            return Response.status(Status.NOT_FOUND).build();
+            throw new DataNotFoundException("Owner with " + ownerId + " does not exist");
         } else {
             String uri = uriInfo.getBaseUriBuilder()
                     .path(OwnerController.class)
@@ -115,6 +134,7 @@ public class OwnerController {
             @NotNull
             @FormParam("lastName") String lastName,
             @NotNull
+            @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
             @FormParam("email") String email,
             @NotNull
             @FormParam("ssn") String ssn,
@@ -160,6 +180,7 @@ public class OwnerController {
             @NotNull
             @FormParam("lastName") String lastName,
             @NotNull
+            @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
             @FormParam("email") String email,
             @NotNull
             @FormParam("ssn") String ssn,
@@ -170,7 +191,7 @@ public class OwnerController {
     ) {
         Owner owner = ownerFacade.find(ownerId);
         if (owner == null) {
-            return Response.status(Status.NOT_FOUND).build();
+            throw new DataNotFoundException("Owner with " + ownerId + " does not exist");
         } else {
             owner.setFirstName(firstName);
             owner.setLastName(lastName);
@@ -229,7 +250,7 @@ public class OwnerController {
             ownerFacade.remove(owner);
             return Response.status(Status.OK).entity(wrappedOwner).build();
         } else {
-            return Response.status(Status.NOT_FOUND).build();
+            throw new DataNotFoundException("Owner with " + ownerId + " does not exist");
         }
     }
 
@@ -260,7 +281,7 @@ public class OwnerController {
         return Response.status(Status.OK).entity(platformList).build();
     }
 
-    @POST
+    @PUT
     @Path("{ownerId}/platform")
     @Produces(JSON)
     public Response addPlatform(
@@ -273,9 +294,9 @@ public class OwnerController {
         Owner owner = ownerFacade.find(ownerId);
         PlatformBrand brand = platformBrandFacade.find(brandId);
         if (owner == null) {
-            return Response.status(Status.NOT_FOUND).build();
+            throw new DataNotFoundException("Owner with " + ownerId + " does not exist");
         } else if (brand == null || platformName == null) {
-            return Response.status(Status.BAD_REQUEST).build();
+            throw new IllegalPropertyException("Did not recognize or ecountered faulty input parameters");
         } else {
             Platform platform = new Platform();
             platform.setPlatformName(platformName);
@@ -306,5 +327,44 @@ public class OwnerController {
             wrappedPlatform.getLinks().add(createLink);
             return Response.status(Status.OK).entity(wrappedPlatform).build();
         }
+    }
+
+    @PUT
+    @Path("{ownerId}/platform/{platformId}/game")
+    @Produces(JSON)
+    public Response addGame(
+            @Context UriInfo uriInfo,
+            @PathParam("ownerId") int ownerId,
+            @PathParam("platformId") int platformId,
+            @FormParam("gameName") String gameName,
+            @FormParam("price") int price,
+            @FormParam("ratingId") int ratingId,
+            @FormParam("brandId") int brandId,
+            @FormParam("genreIds") int genreIds
+    ) {
+        Owner owner = ownerFacade.find(ownerId);
+        Platform platform = platformFacade.find(platformId);
+        GameRating gameRating = gameRatingFacade.find(ratingId);
+        GameBrand gameBrand = gameBrandFacade.find(brandId);
+        Genre gameGenre = genreFacade.find(genreIds);
+        Game game = new Game();
+//        for (int genreId: genreIds) {
+//        }
+        game.setGameName(gameName);
+        game.setPrice(price);
+        game.setPlatform(platform);
+        game.setRating(gameRating);
+        game.setBrand(gameBrand);
+        gameFacade.create(game);
+        game.getGenreList().add(gameGenre);
+        game.getOwnerList().add(owner);
+        owner.getGameList().add(game);
+        platform.getGameList().add(game);
+        gameFacade.edit(game);
+        ownerFacade.edit(owner);
+        platformFacade.edit(platform);
+
+        //TODO: Fix links
+        return Response.status(Status.OK).entity(game).build();
     }
 }

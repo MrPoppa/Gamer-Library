@@ -1,17 +1,21 @@
 package com.benji.controllers;
 
 import com.benji.ejb.OwnerFacade;
+import com.benji.ejb.PlatformBrandFacade;
 import com.benji.ejb.PlatformFacade;
 import com.benji.entities.Game;
 import com.benji.entities.Owner;
 import com.benji.entities.Platform;
+import com.benji.entities.PlatformBrand;
 import com.benji.entitywrappers.PlatformWrapper;
-import com.benji.utils.Link;
+import com.benji.entities.Link;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -34,6 +38,8 @@ public class PlatformController {
 
     @EJB
     PlatformFacade platformFacade;
+    @EJB
+    PlatformBrandFacade platformBrandFacade;
     @EJB
     OwnerFacade ownerFacade;
 
@@ -130,8 +136,6 @@ public class PlatformController {
                 platformFacade.edit(platform);
             }
             String tradeUri = uriInfo.getBaseUriBuilder()
-                    .path(OwnerController.class)
-                    .path(Integer.toString(ownerId))
                     .path(PlatformController.class)
                     .path("/trade")
                     .build()
@@ -152,5 +156,78 @@ public class PlatformController {
             return Response.status(Status.NOT_FOUND).build();
         }
     }
+    
+//    @GET
+//    @Produces(JSON)
+//    public Response getAllOwnedPlatforms(
+//            @Context UriInfo uriInfo,
+//            @PathParam("ownerId") int ownerId
+//    ) {
+//        List<Platform> platforms = platformFacade.getAllPlatformsByOwnerId(ownerId);
+//        List<PlatformWrapper> wrappedPlatforms = new ArrayList<>();
+//        for (Platform p : platforms) {
+//            String selfUri = uriInfo.getBaseUriBuilder()
+//                    .path(PlatformController.class)
+//                    .path(Integer.toString(p.getId()))
+//                    .build()
+//                    .toString();
+//            Link link = new Link(selfUri, "self");
+//            PlatformWrapper wrappedPlatform = new PlatformWrapper();
+//            wrappedPlatform.setPlatform(p);
+//            wrappedPlatform.getLinks().add(link);
+//            wrappedPlatforms.add(wrappedPlatform);
+//        }
+//        GenericEntity<List<PlatformWrapper>> platformList
+//                = new GenericEntity<List<PlatformWrapper>>(wrappedPlatforms) {
+//                };
+//        return Response.status(Status.OK).entity(platformList).build();
+//    }
+//
+//    @POST
+//    @Path("{ownerId}")
+//    @Produces(JSON)
+//    public Response addPlatform(
+//            @Context UriInfo uriInfo,
+//            @PathParam("ownerId") int ownerId,
+//            @FormParam("platformName") String platformName,
+//            @FormParam("price") int price,
+//            @FormParam("brandId") int brandId
+//    ) {
+//        Owner owner = ownerFacade.find(ownerId);
+//        PlatformBrand brand = platformBrandFacade.find(brandId);
+//        if (owner == null) {
+//            return Response.status(Status.NOT_FOUND).build();
+//        } else if (brand == null || platformName == null) {
+//            return Response.status(Status.BAD_REQUEST).build();
+//        } else {
+//            Platform platform = new Platform();
+//            platform.setPlatformName(platformName);
+//            platform.setPrice(price);
+//            platform.setBuyDate(new Date(System.currentTimeMillis()));
+//            platform.setBrand(brand);
+//            platformFacade.create(platform);
+//            platform.getOwnerList().add(owner);
+//            owner.getPlatformList().add(platform);
+//            platformFacade.edit(platform);
+//            ownerFacade.edit(owner);
+//            String selfUri = uriInfo.getBaseUriBuilder()
+//                    .path(PlatformController.class)
+//                    .path(Integer.toString(platform.getId()))
+//                    .build()
+//                    .toString();
+//            Link selfLink = new Link(selfUri, "self");
+//            String createUri = uriInfo.getBaseUriBuilder()
+//                    .path(PlatformController.class)
+//                    .path(Integer.toString(ownerId))
+//                    .build()
+//                    .toString();
+//            Link createLink = new Link(createUri, "create");
+//            PlatformWrapper wrappedPlatform = new PlatformWrapper();
+//            wrappedPlatform.setPlatform(platform);
+//            wrappedPlatform.getLinks().add(selfLink);
+//            wrappedPlatform.getLinks().add(createLink);
+//            return Response.status(Status.OK).entity(wrappedPlatform).build();
+//        }
+//    }
 
 }
