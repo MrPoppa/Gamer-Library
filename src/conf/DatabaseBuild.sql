@@ -47,7 +47,7 @@ rating_id INTEGER,
 brand_id INTEGER,
 CONSTRAINT fk_game_platform FOREIGN KEY(platform_id) REFERENCES Platform(id),
 CONSTRAINT fk_game_rating FOREIGN KEY(rating_id) REFERENCES Game_Rating(id),
-CONSTRAINT fk_game_brand FOREIGN KEY(brand_id) REFERENCES Game_Brand(id)
+CONSTRAINT fk_game_brand FOREIGN KEY(brand_id) REFERENCES Game_Brand(id),
 );
 
 CREATE TABLE Platform_Owner(
@@ -69,4 +69,11 @@ game_id INTEGER,
 genre_id INTEGER,
 CONSTRAINT fk_genre_game FOREIGN KEY(game_id) REFERENCES Game(id),
 CONSTRAINT fk_game_genre FOREIGN KEY(genre_id) REFERENCES Genre(id)
-)
+);
+
+CREATE TABLE Game_Of_The_Day (
+id INTEGER PRIMARY KEY,
+lastUpdateDate DATE,
+game_id INTEGER,
+CONSTRAINT fk_game_of_the_day FOREIGN KEY (game_id) REFERENCES Game(id)
+); 
