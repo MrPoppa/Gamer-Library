@@ -33,9 +33,12 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -110,7 +113,8 @@ public class OwnerController {
     ) {
         Owner owner = ownerFacade.find(ownerId);
         if (owner == null) {
-            throw new DataNotFoundException("Owner with " + ownerId + " does not exist");
+            throw new DataNotFoundException("Owner with "
+                    + ownerId + " does not exist");
         } else {
             String uri = uriInfo.getBaseUriBuilder()
                     .path(OwnerController.class)
@@ -134,7 +138,10 @@ public class OwnerController {
             @NotNull
             @FormParam("lastName") String lastName,
             @NotNull
-            @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
+            @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'"
+                    + "*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)"
+                    + "+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+                    message = "Invalid email")
             @FormParam("email") String email,
             @NotNull
             @FormParam("ssn") String ssn,
@@ -180,7 +187,10 @@ public class OwnerController {
             @NotNull
             @FormParam("lastName") String lastName,
             @NotNull
-            @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
+            @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'"
+                    + "*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)"
+                    + "+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+                    message = "Invalid email")
             @FormParam("email") String email,
             @NotNull
             @FormParam("ssn") String ssn,
@@ -191,7 +201,8 @@ public class OwnerController {
     ) {
         Owner owner = ownerFacade.find(ownerId);
         if (owner == null) {
-            throw new DataNotFoundException("Owner with " + ownerId + " does not exist");
+            throw new DataNotFoundException("Owner with "
+                    + ownerId + " does not exist");
         } else {
             owner.setFirstName(firstName);
             owner.setLastName(lastName);
@@ -250,7 +261,8 @@ public class OwnerController {
             ownerFacade.remove(owner);
             return Response.status(Status.OK).entity(wrappedOwner).build();
         } else {
-            throw new DataNotFoundException("Owner with " + ownerId + " does not exist");
+            throw new DataNotFoundException("Owner with "
+                    + ownerId + " does not exist");
         }
     }
 
@@ -259,10 +271,13 @@ public class OwnerController {
     @Produces(JSON)
     public Response getAllOwnedPlatforms(
             @Context UriInfo uriInfo,
+            @Context Request request,
             @PathParam("ownerId") int ownerId
     ) {
-        List<Platform> platforms = platformFacade.getAllPlatformsByOwnerId(ownerId);
+        List<Platform> platforms
+                = platformFacade.getAllPlatformsByOwnerId(ownerId);
         List<PlatformWrapper> wrappedPlatforms = new ArrayList<>();
+        int hashValue = 0;
         for (Platform platform : platforms) {
             String selfUri = uriInfo.getBaseUriBuilder()
                     .path(PlatformController.class)
@@ -274,19 +289,34 @@ public class OwnerController {
             wrappedPlatform.setPlatform(platform);
             wrappedPlatform.getLinks().add(link);
             wrappedPlatforms.add(wrappedPlatform);
+            hashValue += wrappedPlatform.hashCode();
         }
+
         GenericEntity<List<PlatformWrapper>> platformList
                 = new GenericEntity<List<PlatformWrapper>>(wrappedPlatforms) {
                 };
-        return Response.status(Status.OK).entity(platformList).build();
+
+        CacheControl cc = new CacheControl();
+        cc.setMaxAge(86400);
+        cc.setPrivate(true);
+        EntityTag etag = new EntityTag(Integer.toString(hashValue));
+        Response.ResponseBuilder rbuilder = request.evaluatePreconditions(etag);
+        if (rbuilder == null) {
+            rbuilder = Response.ok(platformList);
+            rbuilder.tag(etag);
+        }
+        rbuilder.cacheControl(cc).build();
+        return rbuilder.build();
+//                Response.status(Status.OK).entity(platformList).build();
     }
 
-    @PUT
+    @POST
     @Path("{ownerId}/platform")
     @Produces(JSON)
     public Response addPlatform(
             @Context UriInfo uriInfo,
             @PathParam("ownerId") int ownerId,
+            @NotNull
             @FormParam("platformName") String platformName,
             @FormParam("price") int price,
             @FormParam("brandId") int brandId
@@ -294,9 +324,11 @@ public class OwnerController {
         Owner owner = ownerFacade.find(ownerId);
         PlatformBrand brand = platformBrandFacade.find(brandId);
         if (owner == null) {
-            throw new DataNotFoundException("Owner with " + ownerId + " does not exist.");
+            throw new DataNotFoundException("Owner with "
+                    + ownerId + " does not exist.");
         } else if (brand == null || platformName == null) {
-            throw new IllegalPropertyException("Encountered faulty or did not recognize input parameters.");
+            throw new IllegalPropertyException("Encountered faulty or did not "
+                    + "recognize input parameters.");
         } else {
             Platform platform = new Platform();
             platform.setPlatformName(platformName);
@@ -330,6 +362,44 @@ public class OwnerController {
     }
 
     @PUT
+    @Path("{ownerId}/platform/{platformId}")
+    @Produces(JSON)
+    public Response updateOwnedPlatform(
+            @Context UriInfo uriInfo,
+            @PathParam("ownerId") int ownerId,
+            @PathParam("platformId") int platformId,
+            @NotNull
+            @FormParam("platformName") String platformName,
+            @FormParam("price") int price,
+            @FormParam("brandId") int brandId
+    ) {
+        Owner owner = ownerFacade.find(ownerId);
+        Platform platform = platformFacade.find(platformId);
+        if (owner == null) {
+            throw new DataNotFoundException("Owner with id "
+                    + ownerId + " does not exist.");
+        } else if (platform == null) {
+            throw new DataNotFoundException("Platform with id "
+                    + platformId + " does not exist.");
+        } else {
+            platform.setPlatformName(platformName);
+            platform.setPrice(price);
+            platform.setBrand(platformBrandFacade.find(brandId));
+            platformFacade.edit(platform);
+            String selfUri = uriInfo.getBaseUriBuilder()
+                    .path(PlatformController.class)
+                    .path(Integer.toString(platform.getId()))
+                    .build()
+                    .toString();
+            Link selfLink = new Link(selfUri, "self");
+            PlatformWrapper wrappedPlatform = new PlatformWrapper();
+            wrappedPlatform.setPlatform(platform);
+            wrappedPlatform.getLinks().add(selfLink);
+            return Response.status(Status.OK).entity(wrappedPlatform).build();
+        }
+    }
+
+    @POST
     @Path("{ownerId}/game")
     @Produces(JSON)
     public Response addGame(

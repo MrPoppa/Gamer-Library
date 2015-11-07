@@ -19,9 +19,12 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -47,6 +50,7 @@ public class PlatformController {
     @Produces(JSON)
     public Response getPlatformById(
             @Context UriInfo uriInfo,
+            @Context Request request,
             @PathParam("platformId") int platformId
     ) {
         Platform platform = platformFacade.find(platformId);
@@ -60,7 +64,21 @@ public class PlatformController {
             PlatformWrapper wrappedPlatform = new PlatformWrapper();
             wrappedPlatform.setPlatform(platform);
             wrappedPlatform.getLinks().add(selfLink);
-            return Response.status(Status.OK).entity(wrappedPlatform).build();
+            
+            int hashValue = wrappedPlatform.hashCode();
+            CacheControl cc = new CacheControl();
+            cc.setMaxAge(86400);
+            cc.setPrivate(true);
+            EntityTag etag = new EntityTag(Integer.toString(hashValue));
+            Response.ResponseBuilder rbuilder = request.evaluatePreconditions(etag);
+            if (rbuilder == null) {
+                rbuilder = Response.ok(wrappedPlatform);
+                rbuilder.tag(etag);
+            }
+            rbuilder.cacheControl(cc).build();
+            
+            return rbuilder.build();
+//                    Response.status(Status.OK).entity(wrappedPlatform).build();
         } else {
             throw new DataNotFoundException("Platform with id " + platformId
                     + " does not exist.");
@@ -96,10 +114,10 @@ public class PlatformController {
      * Lets owners trade platforms.
      *
      * @param uriInfo Context used to build URI leading to specific requests.
-     * @param ownerId int representing the old owners id.
-     * @param platformId int representing the id of the platform about to be
+     * @param ownerId Integer representing the old owners id.
+     * @param platformId Integer representing the id of the platform about to be
      * traded
-     * @param newOwnerId int representing the new owners id.
+     * @param newOwnerId Integer representing the new owners id.
      * @param tradeGames boolean representing the choice to trade the games as
      * well.
      * @return the Platform that has changed owner.
@@ -110,11 +128,11 @@ public class PlatformController {
     public Response tradePlatform(
             @Context UriInfo uriInfo,
             @NotNull
-            @FormParam("ownerId") int ownerId,
+            @FormParam("ownerId") Integer ownerId,
             @NotNull
-            @FormParam("platformId") int platformId,
+            @FormParam("platformId") Integer platformId,
             @NotNull
-            @FormParam("newOwnerId") int newOwnerId,
+            @FormParam("newOwnerId") Integer newOwnerId,
             @NotNull
             @FormParam("tradeGames") boolean tradeGames
     ) {

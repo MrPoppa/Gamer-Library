@@ -4,7 +4,6 @@ import com.benji.ejb.GameFacade;
 import com.benji.entities.Game;
 import com.benji.entitywrappers.GameWrapper;
 import com.benji.entities.Link;
-import com.benji.entitywrappers.PlatformWrapper;
 import com.benji.exceptions.DataNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
