@@ -8,6 +8,7 @@ import com.benji.exceptions.DataNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -26,7 +27,7 @@ import javax.ws.rs.core.UriInfo;
 @Path("game")
 public class GameController {
 
-    private final String JSON = MediaType.APPLICATION_JSON;
+    private static final String JSON = MediaType.APPLICATION_JSON;
 
     @EJB
     GameFacade gameFacade;
@@ -36,7 +37,7 @@ public class GameController {
     @Path("{gameId}")
     public Response getGameById(
             @Context UriInfo uriInfo,
-            @PathParam("gameId") int gameId
+            @PathParam("gameId") Integer gameId
     ) {
         Game game = gameFacade.find(gameId);
         if (game != null) {
@@ -77,5 +78,15 @@ public class GameController {
                 = new GenericEntity<List<GameWrapper>>(wrappedGames) {
                 };
         return Response.status(Status.OK).entity(gameList).build();
+    }
+    
+    @DELETE
+    @Path("{gameId}/delete")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String removeGame(
+            @PathParam("gameId") Integer gameId
+    ) {
+        gameFacade.remove(gameFacade.find(gameId));
+        return "removed";
     }
 }
