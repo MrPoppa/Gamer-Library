@@ -36,7 +36,7 @@ import javax.ws.rs.core.UriInfo;
 @Path("platform")
 public class PlatformController {
 
-    private final String JSON = MediaType.APPLICATION_JSON;
+    private static final String JSON = MediaType.APPLICATION_JSON;
 
     @EJB
     PlatformFacade platformFacade;
@@ -64,7 +64,7 @@ public class PlatformController {
             PlatformWrapper wrappedPlatform = new PlatformWrapper();
             wrappedPlatform.setPlatform(platform);
             wrappedPlatform.getLinks().add(selfLink);
-            
+
             int hashValue = wrappedPlatform.hashCode();
             CacheControl cc = new CacheControl();
             cc.setMaxAge(86400);
@@ -76,7 +76,7 @@ public class PlatformController {
                 rbuilder.tag(etag);
             }
             rbuilder.cacheControl(cc).build();
-            
+
             return rbuilder.build();
 //                    Response.status(Status.OK).entity(wrappedPlatform).build();
         } else {
