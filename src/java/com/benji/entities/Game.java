@@ -106,7 +106,7 @@ public class Game implements Serializable {
         this.buyDate = buyDate;
     }
 
-    @XmlTransient
+//    @XmlTransient
     public List<Genre> getGenreList() {
         return genreList;
     }
