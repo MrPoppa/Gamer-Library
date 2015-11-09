@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 @Entity
 @Table(name = "game_receipt")

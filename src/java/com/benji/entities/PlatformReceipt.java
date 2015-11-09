@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 @Entity
 @Table(name = "platform_receipt")
