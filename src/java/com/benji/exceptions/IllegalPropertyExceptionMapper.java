@@ -7,7 +7,7 @@ import javax.ws.rs.ext.Provider;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 @Provider
 public class IllegalPropertyExceptionMapper implements ExceptionMapper<IllegalPropertyException> {

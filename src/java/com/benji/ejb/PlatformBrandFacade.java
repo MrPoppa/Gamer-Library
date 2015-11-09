@@ -1,15 +1,13 @@
 package com.benji.ejb;
 
-import com.benji.entities.Platform;
 import com.benji.entities.PlatformBrand;
-import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 @Stateless
 public class PlatformBrandFacade extends AbstractFacade<PlatformBrand> {

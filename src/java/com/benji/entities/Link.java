@@ -2,7 +2,7 @@ package com.benji.entities;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 public class Link {
     private String href;

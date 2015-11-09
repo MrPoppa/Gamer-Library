@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 public class GameWrapper {
 

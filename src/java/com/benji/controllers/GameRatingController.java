@@ -21,7 +21,7 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 @Path("rating")
 public class GameRatingController {

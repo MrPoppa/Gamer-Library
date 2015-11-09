@@ -16,7 +16,7 @@ import javax.jws.WebService;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 @WebService(
         name = "GameController",

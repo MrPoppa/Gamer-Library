@@ -25,6 +25,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -45,7 +46,7 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 @Path("/owner")
 public class OwnerController {
@@ -134,8 +135,10 @@ public class OwnerController {
     public Response createOwner(
             @Context UriInfo uriInfo,
             @NotNull
+            @Size(max = 24)
             @FormParam("firstName") String firstName,
             @NotNull
+            @Size(max = 24)
             @FormParam("lastName") String lastName,
             @NotNull
             @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'"
@@ -144,10 +147,16 @@ public class OwnerController {
                     message = "Invalid email")
             @FormParam("email") String email,
             @NotNull
+            @Size(min = 8, max = 12,
+                    message = "Social security number must be 8 or 12 characters")
+            @Pattern(regexp = "\\d+", 
+                    message = "Social security number must only contain numbers")
             @FormParam("ssn") String ssn,
             @NotNull
+            @Size(min = 2, message = "Username must contain atleast 2 characters.")
             @FormParam("userName") String userName,
             @NotNull
+            @Size(min = 6, message = "Password needs to be atleast 6 characters.")
             @FormParam("password") String password
     ) {
         Owner owner = new Owner();

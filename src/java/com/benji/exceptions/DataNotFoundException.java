@@ -2,7 +2,7 @@ package com.benji.exceptions;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 public class DataNotFoundException extends RuntimeException{
 

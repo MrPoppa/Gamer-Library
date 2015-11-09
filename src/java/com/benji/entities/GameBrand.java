@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author Benjamin
+ * @author Benjamin Bengtsson
  */
 @Entity
 @Table(name = "game_brand")

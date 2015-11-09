@@ -2,6 +2,10 @@ package com.benji.entities;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * 
+ * @author Benjamin Bengtsson
+ */
 @XmlRootElement
 public class ErrorMessage {
 	private String errorMessage;
