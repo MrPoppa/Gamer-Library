@@ -294,8 +294,8 @@ public class OwnerController {
             wrappedPlatform.setPlatformReceipt(ownerFacade.getPlatformRecieiptByPlatformAndOwnerId(platform.getId(), ownerId));
             wrappedPlatform.getLinks().add(link);
             wrappedPlatforms.add(wrappedPlatform);
-            hashValue += wrappedPlatform.hashCode();
         }
+        hashValue += wrappedPlatforms.hashCode();
 
         GenericEntity<List<PlatformWrapper>> platformList
                 = new GenericEntity<List<PlatformWrapper>>(wrappedPlatforms) {

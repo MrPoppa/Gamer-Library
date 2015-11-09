@@ -2,6 +2,7 @@ package com.benji.entities;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -116,19 +117,41 @@ public class Platform implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
+        int hash = 7;
+        hash = 83 * hash + Objects.hashCode(this.id);
+        hash = 83 * hash + Objects.hashCode(this.platformName);
+        hash = 83 * hash + Objects.hashCode(this.ownerList);
+        hash = 83 * hash + Objects.hashCode(this.gameList);
+        hash = 83 * hash + Objects.hashCode(this.platformReceiptList);
+        hash = 83 * hash + Objects.hashCode(this.brand);
         return hash;
     }
 
     @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Platform)) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-        Platform other = (Platform) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Platform other = (Platform) obj;
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.platformName, other.platformName)) {
+            return false;
+        }
+        if (!Objects.equals(this.ownerList, other.ownerList)) {
+            return false;
+        }
+        if (!Objects.equals(this.gameList, other.gameList)) {
+            return false;
+        }
+        if (!Objects.equals(this.platformReceiptList, other.platformReceiptList)) {
+            return false;
+        }
+        if (!Objects.equals(this.brand, other.brand)) {
             return false;
         }
         return true;

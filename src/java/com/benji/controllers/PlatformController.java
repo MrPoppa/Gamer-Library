@@ -76,11 +76,7 @@ public class PlatformController {
             wrappedPlatform.setPlatform(platform);
             wrappedPlatform.getLinks().add(selfLink);
 
-            int hashValue = wrappedPlatform.getPlatform().hashCode();
-            System.out.println(hashValue);
-            for (Link link : wrappedPlatform.getLinks()) {
-                hashValue += link.hashCode();
-            }
+            int hashValue = wrappedPlatform.hashCode();
             CacheControl cc = new CacheControl();
             cc.setMaxAge(86400);
             cc.setPrivate(true);
@@ -93,7 +89,6 @@ public class PlatformController {
             rbuilder.cacheControl(cc);
 
             return rbuilder.build();
-//                    Response.status(Status.OK).entity(wrappedPlatform).build();
         } else {
             throw new DataNotFoundException("Platform with id " + platformId
                     + " does not exist.");
