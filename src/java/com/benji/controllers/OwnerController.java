@@ -50,7 +50,7 @@ import javax.ws.rs.core.UriInfo;
 @Path("/owner")
 public class OwnerController {
 
-    private final String JSON = MediaType.APPLICATION_JSON;
+    private static final String JSON = MediaType.APPLICATION_JSON;
 
     @EJB
     OwnerFacade ownerFacade;
@@ -109,7 +109,7 @@ public class OwnerController {
     @Path("{ownerId}")
     public Response getOwnerById(
             @Context UriInfo uriInfo,
-            @PathParam("ownerId") int ownerId
+            @PathParam("ownerId") Integer ownerId
     ) {
         Owner owner = ownerFacade.find(ownerId);
         if (owner == null) {
@@ -181,7 +181,7 @@ public class OwnerController {
     @Produces(JSON)
     public Response updateOwner(
             @Context UriInfo uriInfo,
-            @PathParam("ownerId") int ownerId,
+            @PathParam("ownerId") Integer ownerId,
             @NotNull
             @FormParam("firstName") String firstName,
             @NotNull
@@ -236,7 +236,7 @@ public class OwnerController {
     @Produces(JSON)
     public Response deleteOwner(
             @Context UriInfo uriInfo,
-            @PathParam("ownerId") int ownerId
+            @PathParam("ownerId") Integer ownerId
     ) {
         Owner owner = ownerFacade.find(ownerId);
         System.out.println(ownerId);
@@ -272,7 +272,7 @@ public class OwnerController {
     public Response getAllOwnedPlatforms(
             @Context UriInfo uriInfo,
             @Context Request request,
-            @PathParam("ownerId") int ownerId
+            @PathParam("ownerId") Integer ownerId
     ) {
         List<Platform> platforms
                 = platformFacade.getAllPlatformsByOwnerId(ownerId);
@@ -315,11 +315,13 @@ public class OwnerController {
     @Produces(JSON)
     public Response addPlatform(
             @Context UriInfo uriInfo,
-            @PathParam("ownerId") int ownerId,
+            @PathParam("ownerId") Integer ownerId,
             @NotNull
             @FormParam("platformName") String platformName,
-            @FormParam("price") int price,
-            @FormParam("brandId") int brandId
+            @NotNull
+            @FormParam("price") Integer price,
+            @NotNull
+            @FormParam("brandId") Integer brandId
     ) {
         Owner owner = ownerFacade.find(ownerId);
         PlatformBrand brand = platformBrandFacade.find(brandId);
@@ -366,12 +368,14 @@ public class OwnerController {
     @Produces(JSON)
     public Response updateOwnedPlatform(
             @Context UriInfo uriInfo,
-            @PathParam("ownerId") int ownerId,
-            @PathParam("platformId") int platformId,
+            @PathParam("ownerId") Integer ownerId,
+            @PathParam("platformId") Integer platformId,
             @NotNull
             @FormParam("platformName") String platformName,
-            @FormParam("price") int price,
-            @FormParam("brandId") int brandId
+            @NotNull
+            @FormParam("price") Integer price,
+            @NotNull
+            @FormParam("brandId") Integer brandId
     ) {
         Owner owner = ownerFacade.find(ownerId);
         Platform platform = platformFacade.find(platformId);
@@ -404,29 +408,38 @@ public class OwnerController {
     @Produces(JSON)
     public Response addGame(
             @Context UriInfo uriInfo,
-            @PathParam("ownerId") int ownerId,
-            @FormParam("platformId") int platformId,
+            @PathParam("ownerId") Integer ownerId,
+            @NotNull
+            @FormParam("platformId") Integer platformId,
+            @NotNull
             @FormParam("gameName") String gameName,
-            @FormParam("price") int price,
-            @FormParam("ratingId") int ratingId,
-            @FormParam("brandId") int brandId,
-            @FormParam("genreIds") int genreIds
+            @NotNull
+            @FormParam("price") Integer price,
+            @NotNull
+            @FormParam("ratingId") Integer ratingId,
+            @NotNull
+            @FormParam("brandId") Integer brandId,
+            @NotNull
+            @FormParam("genreIds") List<Integer> genreIds
     ) {
         Owner owner = ownerFacade.find(ownerId);
         Platform platform = platformFacade.find(platformId);
         GameRating gameRating = gameRatingFacade.find(ratingId);
         GameBrand gameBrand = gameBrandFacade.find(brandId);
-        Genre gameGenre = genreFacade.find(genreIds);
         Game game = new Game();
-//        for (int genreId: genreIds) {
-//        }
         game.setGameName(gameName);
         game.setPrice(price);
         game.setPlatform(platform);
         game.setRating(gameRating);
         game.setBrand(gameBrand);
+        game.setBuyDate(new Date(System.currentTimeMillis()));
         gameFacade.create(game);
-        game.getGenreList().add(gameGenre);
+        for (Integer genreId : genreIds) {
+            Genre gameGenre = genreFacade.find(genreId);
+            game.getGenreList().add(gameGenre);
+            gameGenre.getGameList().add(game);
+            genreFacade.edit(gameGenre);
+        }
         game.getOwnerList().add(owner);
         owner.getGameList().add(game);
         platform.getGameList().add(game);
