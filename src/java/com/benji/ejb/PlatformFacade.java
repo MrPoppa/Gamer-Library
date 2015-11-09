@@ -8,7 +8,7 @@ import javax.persistence.PersistenceContext;
 
 /**
  *
- * @author Benjamin Bengtsson
+ * @author Benjamin
  */
 @Stateless
 public class PlatformFacade extends AbstractFacade<Platform> {
@@ -23,7 +23,7 @@ public class PlatformFacade extends AbstractFacade<Platform> {
     public PlatformFacade() {
         super(Platform.class);
     }
-    
+
     public List<Platform> getAllPlatformsByOwnerId(int ownerId) {
         return getEntityManager().createNamedQuery("Platform.findAllPlatformsByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }

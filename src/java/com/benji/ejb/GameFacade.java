@@ -7,7 +7,7 @@ import javax.persistence.PersistenceContext;
 
 /**
  *
- * @author Benjamin Bengtsson
+ * @author Benjamin
  */
 @Stateless
 public class GameFacade extends AbstractFacade<Game> {

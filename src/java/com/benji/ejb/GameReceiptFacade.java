@@ -1,6 +1,6 @@
 package com.benji.ejb;
 
-import com.benji.entities.GameOfTheDay;
+import com.benji.entities.GameReceipt;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -10,7 +10,7 @@ import javax.persistence.PersistenceContext;
  * @author Benjamin
  */
 @Stateless
-public class GameOfTheDayFacade extends AbstractFacade<GameOfTheDay> {
+public class GameReceiptFacade extends AbstractFacade<GameReceipt> {
     @PersistenceContext(unitName = "GamerLibraryPU")
     private EntityManager em;
 
@@ -19,8 +19,8 @@ public class GameOfTheDayFacade extends AbstractFacade<GameOfTheDay> {
         return em;
     }
 
-    public GameOfTheDayFacade() {
-        super(GameOfTheDay.class);
+    public GameReceiptFacade() {
+        super(GameReceipt.class);
     }
 
 }

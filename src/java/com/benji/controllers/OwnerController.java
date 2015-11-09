@@ -3,22 +3,21 @@ package com.benji.controllers;
 import com.benji.ejb.GameBrandFacade;
 import com.benji.ejb.GameFacade;
 import com.benji.ejb.GameRatingFacade;
+import com.benji.ejb.GameReceiptFacade;
 import com.benji.ejb.GenreFacade;
 import com.benji.ejb.OwnerFacade;
 import com.benji.ejb.PlatformBrandFacade;
 import com.benji.ejb.PlatformFacade;
+import com.benji.ejb.PlatformReceiptFacade;
 import com.benji.entities.Game;
-import com.benji.entities.GameBrand;
-import com.benji.entities.GameRating;
-import com.benji.entities.Genre;
+import com.benji.entities.GameReceipt;
 import com.benji.entities.Owner;
 import com.benji.entities.Platform;
-import com.benji.entities.PlatformBrand;
 import com.benji.entitywrappers.OwnerWrapper;
 import com.benji.entitywrappers.PlatformWrapper;
 import com.benji.entities.Link;
+import com.benji.entities.PlatformReceipt;
 import com.benji.exceptions.DataNotFoundException;
-import com.benji.exceptions.IllegalPropertyException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,17 +55,13 @@ public class OwnerController {
     @EJB
     OwnerFacade ownerFacade;
     @EJB
-    PlatformBrandFacade platformBrandFacade;
-    @EJB
-    GameBrandFacade gameBrandFacade;
-    @EJB
-    GameRatingFacade gameRatingFacade;
-    @EJB
-    GenreFacade genreFacade;
-    @EJB
     PlatformFacade platformFacade;
     @EJB
     GameFacade gameFacade;
+    @EJB
+    GameReceiptFacade gameRecieptFacade;
+    @EJB
+    PlatformReceiptFacade platformReceiptFacade;
 
     /**
      * Method to fetch all Owner objects saved in the database.
@@ -149,7 +144,7 @@ public class OwnerController {
             @NotNull
             @Size(min = 8, max = 12,
                     message = "Social security number must be 8 or 12 characters")
-            @Pattern(regexp = "\\d+", 
+            @Pattern(regexp = "\\d+",
                     message = "Social security number must only contain numbers")
             @FormParam("ssn") String ssn,
             @NotNull
@@ -296,6 +291,7 @@ public class OwnerController {
             Link link = new Link(selfUri, "self");
             PlatformWrapper wrappedPlatform = new PlatformWrapper();
             wrappedPlatform.setPlatform(platform);
+            wrappedPlatform.setPlatformReceipt(ownerFacade.getPlatformRecieiptByPlatformAndOwnerId(platform.getId(), ownerId));
             wrappedPlatform.getLinks().add(link);
             wrappedPlatforms.add(wrappedPlatform);
             hashValue += wrappedPlatform.hashCode();
@@ -319,36 +315,37 @@ public class OwnerController {
 //                Response.status(Status.OK).entity(platformList).build();
     }
 
-    @POST
+    @PUT
     @Path("{ownerId}/platform")
     @Produces(JSON)
     public Response addPlatform(
             @Context UriInfo uriInfo,
             @PathParam("ownerId") Integer ownerId,
             @NotNull
-            @FormParam("platformName") String platformName,
+            @FormParam("platformId") Integer platformId,
             @NotNull
-            @FormParam("price") Integer price,
-            @NotNull
-            @FormParam("brandId") Integer brandId
+            @FormParam("price") Integer price
     ) {
         Owner owner = ownerFacade.find(ownerId);
-        PlatformBrand brand = platformBrandFacade.find(brandId);
+        Platform platform = platformFacade.find(platformId);
         if (owner == null) {
             throw new DataNotFoundException("Owner with "
                     + ownerId + " does not exist.");
-        } else if (brand == null || platformName == null) {
-            throw new IllegalPropertyException("Encountered faulty or did not "
-                    + "recognize input parameters.");
+        } else if (platform == null) {
+            throw new DataNotFoundException("Platform with "
+                    + platformId + " does not exist.");
         } else {
-            Platform platform = new Platform();
-            platform.setPlatformName(platformName);
-            platform.setPrice(price);
-            platform.setBuyDate(new Date(System.currentTimeMillis()));
-            platform.setBrand(brand);
-            platformFacade.create(platform);
+            PlatformReceipt platformReceipt = new PlatformReceipt();
+            platformReceipt.setOwner(owner);
+            platformReceipt.setPlatform(platform);
+            platformReceipt.setPrice(price);
+            platformReceipt.setBuyDate(new Date(System.currentTimeMillis()));
+            platformReceiptFacade.create(platformReceipt);
             platform.getOwnerList().add(owner);
+            platform.getPlatformReceiptList().add(platformReceipt);
+            owner.getPlatformReceiptList().add(platformReceipt);
             owner.getPlatformList().add(platform);
+            platformReceiptFacade.edit(platformReceipt);
             platformFacade.edit(platform);
             ownerFacade.edit(owner);
             String selfUri = uriInfo.getBaseUriBuilder()
@@ -357,13 +354,13 @@ public class OwnerController {
                     .build()
                     .toString();
             Link selfLink = new Link(selfUri, "self");
-            String createUri = uriInfo.getBaseUriBuilder()
+            String addPlatformUri = uriInfo.getBaseUriBuilder()
                     .path(OwnerController.class)
                     .path(Integer.toString(ownerId))
                     .path(PlatformController.class)
                     .build()
                     .toString();
-            Link createLink = new Link(createUri, "create");
+            Link createLink = new Link(addPlatformUri, "add");
             PlatformWrapper wrappedPlatform = new PlatformWrapper();
             wrappedPlatform.setPlatform(platform);
             wrappedPlatform.getLinks().add(selfLink);
@@ -373,46 +370,6 @@ public class OwnerController {
     }
 
     @PUT
-    @Path("{ownerId}/platform/{platformId}")
-    @Produces(JSON)
-    public Response updateOwnedPlatform(
-            @Context UriInfo uriInfo,
-            @PathParam("ownerId") Integer ownerId,
-            @PathParam("platformId") Integer platformId,
-            @NotNull
-            @FormParam("platformName") String platformName,
-            @NotNull
-            @FormParam("price") Integer price,
-            @NotNull
-            @FormParam("brandId") Integer brandId
-    ) {
-        Owner owner = ownerFacade.find(ownerId);
-        Platform platform = platformFacade.find(platformId);
-        if (owner == null) {
-            throw new DataNotFoundException("Owner with id "
-                    + ownerId + " does not exist.");
-        } else if (platform == null) {
-            throw new DataNotFoundException("Platform with id "
-                    + platformId + " does not exist.");
-        } else {
-            platform.setPlatformName(platformName);
-            platform.setPrice(price);
-            platform.setBrand(platformBrandFacade.find(brandId));
-            platformFacade.edit(platform);
-            String selfUri = uriInfo.getBaseUriBuilder()
-                    .path(PlatformController.class)
-                    .path(Integer.toString(platform.getId()))
-                    .build()
-                    .toString();
-            Link selfLink = new Link(selfUri, "self");
-            PlatformWrapper wrappedPlatform = new PlatformWrapper();
-            wrappedPlatform.setPlatform(platform);
-            wrappedPlatform.getLinks().add(selfLink);
-            return Response.status(Status.OK).entity(wrappedPlatform).build();
-        }
-    }
-
-    @POST
     @Path("{ownerId}/game")
     @Produces(JSON)
     public Response addGame(
@@ -421,37 +378,22 @@ public class OwnerController {
             @NotNull
             @FormParam("platformId") Integer platformId,
             @NotNull
-            @FormParam("gameName") String gameName,
+            @FormParam("gameId") Integer gameId,
             @NotNull
-            @FormParam("price") Integer price,
-            @NotNull
-            @FormParam("ratingId") Integer ratingId,
-            @NotNull
-            @FormParam("brandId") Integer brandId,
-            @NotNull
-            @FormParam("genreIds") List<Integer> genreIds
+            @FormParam("price") Integer price
     ) {
         Owner owner = ownerFacade.find(ownerId);
         Platform platform = platformFacade.find(platformId);
-        GameRating gameRating = gameRatingFacade.find(ratingId);
-        GameBrand gameBrand = gameBrandFacade.find(brandId);
-        Game game = new Game();
-        game.setGameName(gameName);
-        game.setPrice(price);
-        game.setPlatform(platform);
-        game.setRating(gameRating);
-        game.setBrand(gameBrand);
-        game.setBuyDate(new Date(System.currentTimeMillis()));
-        gameFacade.create(game);
-        for (Integer genreId : genreIds) {
-            Genre gameGenre = genreFacade.find(genreId);
-            game.getGenreList().add(gameGenre);
-            gameGenre.getGameList().add(game);
-            genreFacade.edit(gameGenre);
-        }
+        Game game = gameFacade.find(gameId);
+        GameReceipt gameReciept = new GameReceipt();
+        gameReciept.setBuyDate(new Date(System.currentTimeMillis()));
+        gameReciept.setGame(game);
+        gameReciept.setPrice(price);
+        gameReciept.setOwner(owner);
         game.getOwnerList().add(owner);
         owner.getGameList().add(game);
         platform.getGameList().add(game);
+        gameRecieptFacade.create(gameReciept);
         gameFacade.edit(game);
         ownerFacade.edit(owner);
         platformFacade.edit(platform);

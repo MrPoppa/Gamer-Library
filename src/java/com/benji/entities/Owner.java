@@ -3,7 +3,6 @@ package com.benji.entities;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +13,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author Benjamin Bengtsson
+ * @author Benjamin
  */
 @Entity
 @Table(name = "owner")
@@ -35,7 +35,10 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Owner.findByEmail", query = "SELECT o FROM Owner o WHERE o.email = :email"),
     @NamedQuery(name = "Owner.findBySsn", query = "SELECT o FROM Owner o WHERE o.ssn = :ssn"),
     @NamedQuery(name = "Owner.findByUserName", query = "SELECT o FROM Owner o WHERE o.userName = :userName"),
-    @NamedQuery(name = "Owner.findByPassword", query = "SELECT o FROM Owner o WHERE o.password = :password")
+    @NamedQuery(name = "Owner.findByPassword", query = "SELECT o FROM Owner o WHERE o.password = :password"),
+    @NamedQuery(name = "Owner.findPlatformRecieiptByPlatformAndOwnerId", query = "SELECT r FROM Owner o JOIN o.platformReceiptList r WHERE r.platform.id = :platformId AND r.owner.id = :ownerId"),
+    @NamedQuery(name = "Owner.findGameRecieiptByGameAndOwnerId", query = "SELECT r FROM Owner o JOIN o.gameReceiptList r WHERE r.game.id = :gameId AND r.owner.id = :ownerId"),
+    @NamedQuery(name = "Owner.findOwnedPlatformGamesByPlatformId", query = "SELECT g FROM Owner o JOIN o.gameList g WHERE g.platform.id = :platformId")
 })
 public class Owner implements Serializable {
 
@@ -51,8 +54,9 @@ public class Owner implements Serializable {
     @Size(max = 64)
     @Column(name = "lastName")
     private String lastName;
-    //if the field contains email address consider using this annotation to enforce field validation
-    @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
+    @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`"
+            + "{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:"
+            + "[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
     @Size(max = 64)
     @Column(name = "email")
     private String email;
@@ -66,12 +70,17 @@ public class Owner implements Serializable {
     @Column(name = "password")
     private String password;
     @JoinTable(name = "game_owner", joinColumns = {
-        @JoinColumn(name = "owner_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "game_id", referencedColumnName = "id")})
+        @JoinColumn(name = "owner_id", referencedColumnName = "id")},
+            inverseJoinColumns = {
+                @JoinColumn(name = "game_id", referencedColumnName = "id")})
     @ManyToMany
     private List<Game> gameList;
-    @ManyToMany(mappedBy = "ownerList", cascade = CascadeType.PERSIST)
+    @ManyToMany(mappedBy = "ownerList")
     private List<Platform> platformList;
+    @OneToMany(mappedBy = "owner")
+    private List<PlatformReceipt> platformReceiptList;
+    @OneToMany(mappedBy = "owner")
+    private List<GameReceipt> gameReceiptList;
 
     public Owner() {
     }
@@ -152,6 +161,24 @@ public class Owner implements Serializable {
 
     public void setPlatformList(List<Platform> platformList) {
         this.platformList = platformList;
+    }
+
+    @XmlTransient
+    public List<PlatformReceipt> getPlatformReceiptList() {
+        return platformReceiptList;
+    }
+
+    public void setPlatformReceiptList(List<PlatformReceipt> platformReceiptList) {
+        this.platformReceiptList = platformReceiptList;
+    }
+
+    @XmlTransient
+    public List<GameReceipt> getGameReceiptList() {
+        return gameReceiptList;
+    }
+
+    public void setGameReceiptList(List<GameReceipt> gameReceiptList) {
+        this.gameReceiptList = gameReceiptList;
     }
 
     @Override

@@ -1,10 +1,8 @@
 package com.benji.entities;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,15 +16,13 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author Benjamin Bengtsson
+ * @author Benjamin
  */
 @Entity
 @Table(name = "platform")
@@ -35,11 +31,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Platform.findAll", query = "SELECT p FROM Platform p"),
     @NamedQuery(name = "Platform.findById", query = "SELECT p FROM Platform p WHERE p.id = :id"),
     @NamedQuery(name = "Platform.findByPlatformName", query = "SELECT p FROM Platform p WHERE p.platformName = :platformName"),
-    @NamedQuery(name = "Platform.findByPrice", query = "SELECT p FROM Platform p WHERE p.price = :price"),
-    @NamedQuery(name = "Platform.findByBuyDate", query = "SELECT p FROM Platform p WHERE p.buyDate = :buyDate"),
     //SQL: SELECT p.* FROM platform AS p JOIN platform_owner AS po ON p.id = po.platform_id WHERE owner_id = 2;
-    @NamedQuery(name = "Platform.findAllPlatformsByOwnerId", query = "SELECT p FROM Platform p JOIN p.ownerList o WHERE o.id = :ownerId")
-})
+    @NamedQuery(name = "Platform.findAllPlatformsByOwnerId", query = "SELECT p FROM Platform p JOIN p.ownerList o WHERE o.id = :ownerId")})
 public class Platform implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -50,18 +43,15 @@ public class Platform implements Serializable {
     @Size(max = 64)
     @Column(name = "platformName")
     private String platformName;
-    @Column(name = "price")
-    private Integer price;
-    @Column(name = "buyDate")
-    @Temporal(TemporalType.DATE)
-    private Date buyDate;
     @JoinTable(name = "platform_owner", joinColumns = {
         @JoinColumn(name = "platform_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "owner_id", referencedColumnName = "id")})
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany
     private List<Owner> ownerList;
     @OneToMany(mappedBy = "platform")
     private List<Game> gameList;
+    @OneToMany(mappedBy = "platform")
+    private List<PlatformReceipt> platformReceiptList;
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
     @ManyToOne
     private PlatformBrand brand;
@@ -89,22 +79,6 @@ public class Platform implements Serializable {
         this.platformName = platformName;
     }
 
-    public Integer getPrice() {
-        return price;
-    }
-
-    public void setPrice(Integer price) {
-        this.price = price;
-    }
-
-    public Date getBuyDate() {
-        return buyDate;
-    }
-
-    public void setBuyDate(Date buyDate) {
-        this.buyDate = buyDate;
-    }
-
     @XmlTransient
     public List<Owner> getOwnerList() {
         return ownerList;
@@ -121,6 +95,15 @@ public class Platform implements Serializable {
 
     public void setGameList(List<Game> gameList) {
         this.gameList = gameList;
+    }
+
+    @XmlTransient
+    public List<PlatformReceipt> getPlatformReceiptList() {
+        return platformReceiptList;
+    }
+
+    public void setPlatformReceiptList(List<PlatformReceipt> platformReceiptList) {
+        this.platformReceiptList = platformReceiptList;
     }
 
     public PlatformBrand getBrand() {

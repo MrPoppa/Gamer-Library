@@ -7,7 +7,7 @@ import javax.persistence.PersistenceContext;
 
 /**
  *
- * @author Benjamin Bengtsson
+ * @author Benjamin
  */
 @Stateless
 public class PlatformBrandFacade extends AbstractFacade<PlatformBrand> {

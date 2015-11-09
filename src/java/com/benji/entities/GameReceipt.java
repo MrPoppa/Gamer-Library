@@ -5,6 +5,8 @@ import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -13,7 +15,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -21,30 +22,36 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Benjamin
  */
 @Entity
-@Table(name = "game_of_the_day")
+@Table(name = "game_receipt")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "GameOfTheDay.findAll", query = "SELECT g FROM GameOfTheDay g"),
-    @NamedQuery(name = "GameOfTheDay.findById", query = "SELECT g FROM GameOfTheDay g WHERE g.id = :id"),
-    @NamedQuery(name = "GameOfTheDay.findByLastUpdateDate", query = "SELECT g FROM GameOfTheDay g WHERE g.lastUpdateDate = :lastUpdateDate")})
-public class GameOfTheDay implements Serializable {
+    @NamedQuery(name = "GameReceipt.findAll", query = "SELECT g FROM GameReceipt g"),
+    @NamedQuery(name = "GameReceipt.findById", query = "SELECT g FROM GameReceipt g WHERE g.id = :id"),
+    @NamedQuery(name = "GameReceipt.findByPrice", query = "SELECT g FROM GameReceipt g WHERE g.price = :price"),
+    @NamedQuery(name = "GameReceipt.findByBuyDate", query = "SELECT g FROM GameReceipt g WHERE g.buyDate = :buyDate")})
+public class GameReceipt implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @NotNull
     @Column(name = "id")
     private Integer id;
-    @Column(name = "lastUpdateDate")
+    @Column(name = "price")
+    private Integer price;
+    @Column(name = "buyDate")
     @Temporal(TemporalType.DATE)
-    private Date lastUpdateDate;
+    private Date buyDate;
     @JoinColumn(name = "game_id", referencedColumnName = "id")
     @ManyToOne
     private Game game;
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @ManyToOne
+    private Owner owner;
 
-    public GameOfTheDay() {
+    public GameReceipt() {
     }
 
-    public GameOfTheDay(Integer id) {
+    public GameReceipt(Integer id) {
         this.id = id;
     }
 
@@ -56,12 +63,20 @@ public class GameOfTheDay implements Serializable {
         this.id = id;
     }
 
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
+    public Integer getPrice() {
+        return price;
     }
 
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
+
+    public Date getBuyDate() {
+        return buyDate;
+    }
+
+    public void setBuyDate(Date buyDate) {
+        this.buyDate = buyDate;
     }
 
     public Game getGame() {
@@ -70,6 +85,14 @@ public class GameOfTheDay implements Serializable {
 
     public void setGame(Game game) {
         this.game = game;
+    }
+
+    public Owner getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Owner owner) {
+        this.owner = owner;
     }
 
     @Override
@@ -82,10 +105,10 @@ public class GameOfTheDay implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof GameOfTheDay)) {
+        if (!(object instanceof GameReceipt)) {
             return false;
         }
-        GameOfTheDay other = (GameOfTheDay) object;
+        GameReceipt other = (GameReceipt) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -94,7 +117,7 @@ public class GameOfTheDay implements Serializable {
 
     @Override
     public String toString() {
-        return "com.benji.entities.GameOfTheDay[ id=" + id + " ]";
+        return "com.benji.entities.GameReciept[ id=" + id + " ]";
     }
 
 }

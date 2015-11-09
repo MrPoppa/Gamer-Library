@@ -1,13 +1,18 @@
 package com.benji.controllers;
 
+import com.benji.ejb.GameReceiptFacade;
 import com.benji.ejb.OwnerFacade;
 import com.benji.ejb.PlatformBrandFacade;
 import com.benji.ejb.PlatformFacade;
+import com.benji.ejb.PlatformReceiptFacade;
 import com.benji.entities.Game;
+import com.benji.entities.GameReceipt;
 import com.benji.entities.Owner;
 import com.benji.entities.Platform;
 import com.benji.entitywrappers.PlatformWrapper;
 import com.benji.entities.Link;
+import com.benji.entities.PlatformBrand;
+import com.benji.entities.PlatformReceipt;
 import com.benji.exceptions.DataNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -45,6 +51,10 @@ public class PlatformController {
     PlatformBrandFacade platformBrandFacade;
     @EJB
     OwnerFacade ownerFacade;
+    @EJB
+    GameReceiptFacade gameRecieptFacade;
+    @EJB
+    PlatformReceiptFacade platformRecieptFacade;
 
     @GET
     @Path("{platformId}")
@@ -66,7 +76,11 @@ public class PlatformController {
             wrappedPlatform.setPlatform(platform);
             wrappedPlatform.getLinks().add(selfLink);
 
-            int hashValue = wrappedPlatform.hashCode();
+            int hashValue = wrappedPlatform.getPlatform().hashCode();
+            System.out.println(hashValue);
+            for (Link link : wrappedPlatform.getLinks()) {
+                hashValue += link.hashCode();
+            }
             CacheControl cc = new CacheControl();
             cc.setMaxAge(86400);
             cc.setPrivate(true);
@@ -76,7 +90,7 @@ public class PlatformController {
                 rbuilder = Response.ok(wrappedPlatform);
                 rbuilder.tag(etag);
             }
-            rbuilder.cacheControl(cc).build();
+            rbuilder.cacheControl(cc);
 
             return rbuilder.build();
 //                    Response.status(Status.OK).entity(wrappedPlatform).build();
@@ -111,6 +125,35 @@ public class PlatformController {
         return Response.status(Status.OK).entity(platformList).build();
     }
 
+    @POST
+    @Produces(JSON)
+    public Response createPlatform(
+            @Context UriInfo uriInfo,
+            @FormParam("platformName") String platformName,
+            @FormParam("brandId") Integer brandId
+    ) {
+        PlatformBrand platformBrand = platformBrandFacade.find(brandId);
+        if (platformBrand == null) {
+            throw new DataNotFoundException("Platform brand with id "
+                    + brandId + " does not exist.");
+        } else {
+            Platform platform = new Platform();
+            platform.setPlatformName(platformName);
+            platform.setBrand(platformBrand);
+            platformFacade.create(platform);
+            String selfUri = uriInfo.getBaseUriBuilder()
+                    .path(PlatformController.class)
+                    .path(Integer.toString(platform.getId()))
+                    .build()
+                    .toString();
+            Link selfLink = new Link(selfUri, "self");
+            PlatformWrapper wrappedPlatform = new PlatformWrapper();
+            wrappedPlatform.setPlatform(platform);
+            wrappedPlatform.getLinks().add(selfLink);
+            return Response.status(Status.OK).entity(wrappedPlatform).build();
+        }
+    }
+
     /**
      * Lets owners trade platforms.
      *
@@ -119,9 +162,10 @@ public class PlatformController {
      * @param platformId Integer representing the id of the platform about to be
      * traded
      * @param newOwnerId Integer representing the new owners id.
+     * @param recieptId
      * @param tradeGames boolean representing the choice to trade the games as
      * well.
-     * @return the Platform that has changed owner.
+     * @return the Platform that has changed owner and the new owners receipts.
      */
     @PUT
     @Produces(JSON)
@@ -135,22 +179,26 @@ public class PlatformController {
             @NotNull
             @FormParam("newOwnerId") Integer newOwnerId,
             @NotNull
+            @FormParam("recieptId") Integer recieptId,
+            @NotNull
             @FormParam("tradeGames") boolean tradeGames
     ) {
         Platform platform = platformFacade.find(platformId);
         Owner oldOwner = ownerFacade.find(ownerId);
         Owner newOwner = ownerFacade.find(newOwnerId);
         List<Owner> platformOwners = platform.getOwnerList();
+        PlatformReceipt platformReciept = platformRecieptFacade.find(recieptId);
         if (platformOwners.contains(oldOwner)) {
-
-            platform.getOwnerList().clear();
+            platformReciept.setOwner(newOwner);
+            platform.getOwnerList().remove(oldOwner);
             platform.getOwnerList().add(newOwner);
-            if (!tradeGames) {
-                platform.getGameList().clear();
-                platformFacade.edit(platform);
-            } else {
-                List<Game> games = platform.getGameList();
+            platformRecieptFacade.edit(platformReciept);
+            if (tradeGames) {
+                List<Game> games = ownerFacade.getOwnedPlatformGamesByPlatformId(platformId);
                 for (Game game : games) {
+                    GameReceipt gameReciept = ownerFacade.getGameRecieiptByGameAndOwnerId(game.getId(), ownerId);
+                    gameReciept.setOwner(newOwner);
+                    gameRecieptFacade.edit(gameReciept);
                     newOwner.getGameList().add(game);
                     oldOwner.getGameList().remove(game);
                 }
@@ -172,6 +220,7 @@ public class PlatformController {
             Link selfLink = new Link(selfUri, "self");
             PlatformWrapper wrappedPlatform = new PlatformWrapper();
             wrappedPlatform.setPlatform(platform);
+            wrappedPlatform.setPlatformReceipt(ownerFacade.getPlatformRecieiptByPlatformAndOwnerId(platformId, newOwnerId));
             wrappedPlatform.getLinks().add(selfLink);
             wrappedPlatform.getLinks().add(tradeLink);
             return Response.status(Status.OK).entity(wrappedPlatform).build();
@@ -180,7 +229,7 @@ public class PlatformController {
                     + " does not own the platform with id " + platformId);
         }
     }
-    
+
     @DELETE
     @Path("{platformId}/delete")
     @Produces(JSON)
@@ -189,8 +238,8 @@ public class PlatformController {
             @PathParam("platformId") Integer platformId
     ) {
         Platform platform = platformFacade.find(platformId);
-        if(platform == null) {
-            throw new DataNotFoundException("Platform with id " 
+        if (platform == null) {
+            throw new DataNotFoundException("Platform with id "
                     + platformId + " does not exist.");
         } else {
             platformFacade.remove(platform);

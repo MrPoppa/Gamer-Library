@@ -1,7 +1,6 @@
 package com.benji.entities;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -17,15 +16,13 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author Benjamin Bengtsson
+ * @author Benjamin
  */
 @Entity
 @Table(name = "game")
@@ -33,12 +30,8 @@ import javax.xml.bind.annotation.XmlTransient;
 @NamedQueries({
     @NamedQuery(name = "Game.findAll", query = "SELECT g FROM Game g"),
     @NamedQuery(name = "Game.findById", query = "SELECT g FROM Game g WHERE g.id = :id"),
-    @NamedQuery(name = "Game.findByGameName", query = "SELECT g FROM Game g WHERE g.gameName = :gameName"),
-    @NamedQuery(name = "Game.findByPrice", query = "SELECT g FROM Game g WHERE g.price = :price"),
-    @NamedQuery(name = "Game.findByBuyDate", query = "SELECT g FROM Game g WHERE g.buyDate = :buyDate")})
+    @NamedQuery(name = "Game.findByGameName", query = "SELECT g FROM Game g WHERE g.gameName = :gameName")})
 public class Game implements Serializable {
-    @OneToMany(mappedBy = "game")
-    private List<GameOfTheDay> gameOfTheDayList;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,15 +41,12 @@ public class Game implements Serializable {
     @Size(max = 64)
     @Column(name = "gameName")
     private String gameName;
-    @Column(name = "price")
-    private Integer price;
-    @Column(name = "buyDate")
-    @Temporal(TemporalType.DATE)
-    private Date buyDate;
-    @ManyToMany(mappedBy = "gameList", cascade = CascadeType.PERSIST)
-    private List<Genre> genreList;
     @ManyToMany(mappedBy = "gameList")
     private List<Owner> ownerList;
+    @ManyToMany(mappedBy = "gameList", cascade = CascadeType.PERSIST)
+    private List<Genre> genreList;
+    @OneToMany(mappedBy = "game")
+    private List<GameOfTheDay> gameOfTheDayList;
     @JoinColumn(name = "brand_id", referencedColumnName = "id")
     @ManyToOne
     private GameBrand brand;
@@ -66,6 +56,8 @@ public class Game implements Serializable {
     @JoinColumn(name = "rating_id", referencedColumnName = "id")
     @ManyToOne
     private GameRating rating;
+    @OneToMany(mappedBy = "game")
+    private List<GameReceipt> gameReceiptList;
 
     public Game() {
     }
@@ -90,20 +82,13 @@ public class Game implements Serializable {
         this.gameName = gameName;
     }
 
-    public Integer getPrice() {
-        return price;
+    @XmlTransient
+    public List<Owner> getOwnerList() {
+        return ownerList;
     }
 
-    public void setPrice(Integer price) {
-        this.price = price;
-    }
-
-    public Date getBuyDate() {
-        return buyDate;
-    }
-
-    public void setBuyDate(Date buyDate) {
-        this.buyDate = buyDate;
+    public void setOwnerList(List<Owner> ownerList) {
+        this.ownerList = ownerList;
     }
 
 //    @XmlTransient
@@ -116,12 +101,12 @@ public class Game implements Serializable {
     }
 
     @XmlTransient
-    public List<Owner> getOwnerList() {
-        return ownerList;
+    public List<GameOfTheDay> getGameOfTheDayList() {
+        return gameOfTheDayList;
     }
 
-    public void setOwnerList(List<Owner> ownerList) {
-        this.ownerList = ownerList;
+    public void setGameOfTheDayList(List<GameOfTheDay> gameOfTheDayList) {
+        this.gameOfTheDayList = gameOfTheDayList;
     }
 
     public GameBrand getBrand() {
@@ -148,6 +133,15 @@ public class Game implements Serializable {
         this.rating = rating;
     }
 
+    @XmlTransient
+    public List<GameReceipt> getGameReceiptList() {
+        return gameReceiptList;
+    }
+
+    public void setGameReceiptList(List<GameReceipt> gameReceiptList) {
+        this.gameReceiptList = gameReceiptList;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -171,15 +165,6 @@ public class Game implements Serializable {
     @Override
     public String toString() {
         return "com.benji.entities.Game[ id=" + id + " ]";
-    }
-
-    @XmlTransient
-    public List<GameOfTheDay> getGameOfTheDayList() {
-        return gameOfTheDayList;
-    }
-
-    public void setGameOfTheDayList(List<GameOfTheDay> gameOfTheDayList) {
-        this.gameOfTheDayList = gameOfTheDayList;
     }
 
 }

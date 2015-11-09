@@ -1,5 +1,7 @@
 package com.benji.entities;
 
+import java.util.Objects;
+
 /**
  *
  * @author Benjamin Bengtsson
@@ -30,5 +32,31 @@ public class Link {
 
     public void setHref(String href) {
         this.ref = href;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + Objects.hashCode(this.href);
+        hash = 29 * hash + Objects.hashCode(this.ref);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Link other = (Link) obj;
+        if (!Objects.equals(this.href, other.href)) {
+            return false;
+        }
+        if (!Objects.equals(this.ref, other.ref)) {
+            return false;
+        }
+        return true;
     }
 }
